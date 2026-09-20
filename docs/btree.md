@@ -3,7 +3,12 @@
 Leaves store key/value records. Internal nodes store separators and child page
 IDs. Every node is a slotted disk page, including a one-leaf empty tree.
 
-![B plus tree separators and next leaf link](diagrams/btree.svg)
+```mermaid
+flowchart TD
+    R["internal: separator m"] --> A["leaf: a, c, g"]
+    R --> B["leaf: m, q, z"]
+    A -. next leaf .-> B
+```
 
 Search chooses `upper_bound(separators, key)`. A separator is the exact minimum
 of the subtree to its right. Range scans descend once to the first relevant

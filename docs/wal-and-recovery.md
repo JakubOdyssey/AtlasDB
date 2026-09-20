@@ -11,7 +11,30 @@ are synchronized before returning). Complete page images repair torn writes
 to pages covered by the retained WAL. This avoids physiological redo, undo
 chains and compensation records, at the cost of memory and write amplification.
 
-![WAL commit ordering and recovery after process death](diagrams/wal-and-recovery.svg)
+```mermaid
+sequenceDiagram
+    participant App
+    participant Engine
+    participant WAL
+    participant DB as Database file
+    App->>Engine: begin / put / erase
+    Note over Engine: Private page workspace only
+    App->>Engine: commit
+    Engine->>WAL: BEGIN + PAGE images + COMMIT
+    Engine->>WAL: FlushFileBuffers / fsync
+    WAL-->>Engine: synchronized
+    Engine->>DB: install / evict / flush pages
+    Note over Engine,DB: Process may die after any subset
+    Engine->>DB: FlushFileBuffers / fsync
+    Engine-->>App: commit success
+    Note over Engine: On restart after an interrupted session
+    Engine->>WAL: validate record stream and transaction groups
+    Engine->>DB: redo newest committed image per page
+    Engine->>DB: synchronize
+    Engine->>DB: validate complete tree and free list
+    Engine->>WAL: truncate to header, synchronize
+    Engine->>WAL: start new session, synchronize
+```
 
 ## Enforcing write-ahead order
 

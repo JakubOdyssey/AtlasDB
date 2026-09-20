@@ -4,7 +4,21 @@ AtlasDB is an embedded ordered byte-string map. Its storage algorithm, log
 codec, transaction staging, cache, native file I/O and recovery are implemented
 in this project. It does not wrap another database.
 
-![Storage architecture and ownership boundaries](diagrams/architecture.svg)
+```mermaid
+flowchart TD
+    API["Database / Transaction"] --> Gate["Database mutex + single writer token"]
+    Gate --> Tree["B+ tree"]
+    Tree --> Overlay["Transaction page workspace"]
+    Overlay --> Cache["CLOCK buffer pool"]
+    Commit["Commit coordinator"] --> WAL["Checksummed physical redo WAL"]
+    Overlay --> Commit
+    WAL --> Log[("database.db.wal")]
+    Commit -->|"only after WAL sync"| Cache
+    Cache --> Disk["Native positioned I/O"]
+    Disk --> Data[("database.db")]
+    Recovery["Recovery scanner"] --> WAL
+    Recovery --> Disk
+```
 
 ## Responsibility boundaries
 

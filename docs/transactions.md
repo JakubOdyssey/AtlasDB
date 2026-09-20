@@ -6,7 +6,16 @@ ACID contract.
 
 ## State machine
 
-![Transaction states and failure outcomes](diagrams/transactions.svg)
+```mermaid
+stateDiagram-v2
+    [*] --> ACTIVE: begin
+    ACTIVE --> COMMITTED: commit succeeds
+    ACTIVE --> ABORTED: rollback / destruction / mutation error
+    ACTIVE --> IN_DOUBT: exception after entering WAL commit
+    COMMITTED --> [*]
+    ABORTED --> [*]
+    IN_DOUBT --> [*]: reopen database to resolve persisted state
+```
 
 `put` is an upsert. `erase` returns whether the key existed. `get` returns
 `std::optional<std::string>`. Transactions see their own changes. A mutation
