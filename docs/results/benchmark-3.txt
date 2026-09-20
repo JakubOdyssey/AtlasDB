@@ -1,0 +1,15 @@
+compiler=MSVC 194435228
+build=Release
+cpu=Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
+records=10000 key_bytes=16 value_bytes=128 page_bytes=4096 buffer_pages=64 seed=20260920 commit_batch=100
+workload,operations,seconds,operations_per_second,consumed
+sequential_insert,10000,33.185357,301.3,10000
+random_insert,10000,33.148072,301.7,10000
+point_lookup_random,10000,1.268600,7882.7,1280000
+warm_lookup_100_key_set,10000,0.682042,14661.9,1280000
+range_scan_100,1000,1.249440,800.4,100000
+single_record_commit,100,0.769312,130.0,100
+mixed_80_read_20_write,1000,2.116617,472.5,102400
+tiny_buffer_lookup_os_cache_warm,10000,1.929158,5183.6,1280000
+tiny_buffer_pages_read=42434 misses=42432 evictions=42430
+Notes: sync commits; insert batches include final integrity verification; reopen validation precedes timing; OS cache is NOT flushed; no claim of cold-device throughput.

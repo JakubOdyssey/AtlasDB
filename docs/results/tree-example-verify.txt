@@ -1,0 +1,8 @@
+Page checksums ........ PASS
+B+ tree structure ..... PASS
+Leaf ordering ......... PASS
+Free-page accounting .. PASS
+WAL consistency ....... PASS
+
+Database integrity: PASS
+Pages: 43 Records: 120 Height: 3 Free pages: 0
