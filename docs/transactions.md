@@ -6,30 +6,7 @@ ACID contract.
 
 ## State machine
 
-```mermaid
-flowchart TD
-    A["Begin transaction"]
-    B["ACTIVE"]
-    C["Commit succeeds"]
-    D["COMMITTED"]
-    E["Rollback or destruction or mutation error"]
-    F["ABORTED"]
-    G["Exception after entering WAL commit"]
-    H["IN_DOUBT"]
-    I["Reopen database to resolve persisted state"]
-    J["Transaction finished"]
-    A --> B
-    B --> C
-    C --> D
-    D --> J
-    B --> E
-    E --> F
-    F --> J
-    B --> G
-    G --> H
-    H --> I
-    I --> J
-```
+![Transaction states and failure outcomes](diagrams/transactions.svg)
 
 `put` is an upsert. `erase` returns whether the key existed. `get` returns
 `std::optional<std::string>`. Transactions see their own changes. A mutation

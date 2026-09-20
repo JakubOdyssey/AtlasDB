@@ -34,29 +34,7 @@ safety, parallel read execution or recovery from arbitrary media corruption.
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    A["Embedded API and CLI"]
-    B["Transaction coordinator"]
-    C["Persistent B plus tree"]
-    D["Private page workspace"]
-    E["CLOCK buffer pool"]
-    F["Disk manager"]
-    G["Database file"]
-    H["Write ahead log"]
-    I["WAL file"]
-    J["Recovery and verifier"]
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    B --> H
-    H --> I
-    J --> I
-    J --> G
-```
+![AtlasDB architecture](docs/diagrams/architecture-overview.svg)
 
 The tree never writes directly to disk. It operates through a page-access
 interface backed by a private transaction workspace. That separation makes
@@ -85,15 +63,7 @@ separator keys and page IDs. Insert supports leaf, internal and root splits.
 Delete redistributes or merges siblings, propagates underflow and collapses a
 single-child root. Scans follow the leaf chain in key order.
 
-```mermaid
-flowchart TD
-    A["Root separator user:1004"]
-    B["Leaf user:1001 to user:1003 with ordered scan to next leaf"]
-    C["Leaf user:1004 to user:1007"]
-    A --> B
-    A --> C
-    B --> C
-```
+![B plus tree and ordered leaf scan](docs/diagrams/btree-overview.svg)
 
 Version 1 accepts 0–128-byte keys and 0–512-byte values, including empty and
 binary strings. These are byte limits, not character limits. Capacity is derived
@@ -116,28 +86,7 @@ image count. Only after WAL synchronization can committed images enter the
 cache and reach disk. Database synchronization precedes successful return.
 Rollback needs no disk undo because the design does not steal private pages.
 
-```mermaid
-flowchart TD
-    A["Application commits private page changes"]
-    B["Engine appends BEGIN and PAGE images and COMMIT to WAL"]
-    C["Engine synchronizes WAL"]
-    D["Engine writes changed database pages"]
-    E["Process dies after only some writes"]
-    F["Application reopens database"]
-    G["Engine validates complete committed groups in WAL"]
-    H["Engine replays complete page images into database"]
-    I["Engine synchronizes database and verifies all invariants"]
-    J["Engine resets WAL only after successful verification"]
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> I
-    I --> J
-```
+![Commit interruption and crash recovery](docs/diagrams/recovery-overview.svg)
 
 A SESSION marker distinguishes an interrupted session from a cleanly closed
 log. Recovery reports actual records scanned, committed/incomplete transaction

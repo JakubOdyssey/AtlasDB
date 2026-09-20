@@ -1,0 +1,20 @@
+flowchart TD
+    A["Application commits private page changes"]
+    B["Engine appends BEGIN and PAGE images and COMMIT to WAL"]
+    C["Engine synchronizes WAL"]
+    D["Engine writes changed database pages"]
+    E["Process dies after only some writes"]
+    F["Application reopens database"]
+    G["Engine validates complete committed groups in WAL"]
+    H["Engine replays complete page images into database"]
+    I["Engine synchronizes database and verifies all invariants"]
+    J["Engine resets WAL only after successful verification"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
