@@ -6,17 +6,17 @@ in this project. It does not wrap another database.
 
 ```mermaid
 flowchart TD
-    API[Database / Transaction] --> Gate[Database mutex + single writer token]
-    Gate --> Tree[B+ tree]
-    Tree --> Overlay[Transaction page workspace]
-    Overlay --> Cache[CLOCK buffer pool]
-    Commit[Commit coordinator] --> WAL[Checksummed physical redo WAL]
+    API["Database / Transaction"] --> Gate["Database mutex + single writer token"]
+    Gate --> Tree["B+ tree"]
+    Tree --> Overlay["Transaction page workspace"]
+    Overlay --> Cache["CLOCK buffer pool"]
+    Commit["Commit coordinator"] --> WAL["Checksummed physical redo WAL"]
     Overlay --> Commit
-    WAL --> Log[(database.db.wal)]
-    Commit -->|only after WAL sync| Cache
-    Cache --> Disk[Native positioned I/O]
-    Disk --> Data[(database.db)]
-    Recovery[Recovery scanner] --> WAL
+    WAL --> Log[("database.db.wal")]
+    Commit -->|"only after WAL sync"| Cache
+    Cache --> Disk["Native positioned I/O"]
+    Disk --> Data[("database.db")]
+    Recovery["Recovery scanner"] --> WAL
     Recovery --> Disk
 ```
 

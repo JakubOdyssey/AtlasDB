@@ -36,16 +36,16 @@ safety, parallel read execution or recovery from arbitrary media corruption.
 
 ```mermaid
 flowchart TD
-    API[Embedded API / CLI] --> TX[Single-writer transaction coordinator]
-    TX --> TREE[Persistent B+ tree]
-    TREE --> PRIVATE[Private changed-page workspace]
-    PRIVATE --> BP[CLOCK buffer pool + RAII guards]
-    TX --> WAL[Full-page redo WAL]
-    WAL --> LOG[(database.db.wal)]
-    TX -->|after WAL sync| BP
-    BP --> DM[Native disk manager]
-    DM --> DB[(database.db)]
-    REC[Recovery + structural verifier] --> LOG
+    API["Embedded API / CLI"] --> TX["Single-writer transaction coordinator"]
+    TX --> TREE["Persistent B+ tree"]
+    TREE --> PRIVATE["Private changed-page workspace"]
+    PRIVATE --> BP["CLOCK buffer pool + RAII guards"]
+    TX --> WAL["Full-page redo WAL"]
+    WAL --> LOG[("database.db.wal")]
+    TX -->|"after WAL sync"| BP
+    BP --> DM["Native disk manager"]
+    DM --> DB[("database.db")]
+    REC["Recovery + structural verifier"] --> LOG
     REC --> DB
 ```
 
