@@ -6,18 +6,31 @@ in this project. It does not wrap another database.
 
 ```mermaid
 flowchart TD
-    API["Database / Transaction"] --> Gate["Database mutex + single writer token"]
-    Gate --> Tree["B+ tree"]
-    Tree --> Overlay["Transaction page workspace"]
-    Overlay --> Cache["CLOCK buffer pool"]
-    Commit["Commit coordinator"] --> WAL["Checksummed physical redo WAL"]
-    Overlay --> Commit
-    WAL --> Log[("database.db.wal")]
-    Commit -->|"only after WAL sync"| Cache
-    Cache --> Disk["Native positioned I/O"]
-    Disk --> Data[("database.db")]
-    Recovery["Recovery scanner"] --> WAL
-    Recovery --> Disk
+    A["Database and Transaction"]
+    B["Database mutex and single writer token"]
+    C["B plus tree"]
+    D["Transaction page workspace"]
+    E["CLOCK buffer pool"]
+    F["Commit coordinator"]
+    G["Checksummed physical redo WAL"]
+    H["WAL file"]
+    I["WAL sync before cache installation"]
+    J["Native positioned input and output"]
+    K["Database file"]
+    L["Recovery scanner"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    D --> F
+    F --> G
+    G --> H
+    F --> I
+    I --> E
+    E --> J
+    J --> K
+    L --> G
+    L --> J
 ```
 
 ## Responsibility boundaries

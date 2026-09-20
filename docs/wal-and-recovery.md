@@ -12,28 +12,38 @@ to pages covered by the retained WAL. This avoids physiological redo, undo
 chains and compensation records, at the cost of memory and write amplification.
 
 ```mermaid
-sequenceDiagram
-    participant App
-    participant Engine
-    participant WAL
-    participant DB as Database file
-    App->>Engine: begin / put / erase
-    Note over Engine: Private page workspace only
-    App->>Engine: commit
-    Engine->>WAL: BEGIN + PAGE images + COMMIT
-    Engine->>WAL: FlushFileBuffers / fsync
-    WAL-->>Engine: synchronized
-    Engine->>DB: install / evict / flush pages
-    Note over Engine,DB: Process may die after any subset
-    Engine->>DB: FlushFileBuffers / fsync
-    Engine-->>App: commit success
-    Note over Engine: On restart after an interrupted session
-    Engine->>WAL: validate record stream and transaction groups
-    Engine->>DB: redo newest committed image per page
-    Engine->>DB: synchronize
-    Engine->>DB: validate complete tree and free list
-    Engine->>WAL: truncate to header, synchronize
-    Engine->>WAL: start new session, synchronize
+flowchart TD
+    A["Application begins transaction and puts or erases keys in private page workspace"]
+    B["Application commits"]
+    C["Engine appends BEGIN and PAGE images and COMMIT to WAL"]
+    D["Engine synchronizes WAL with FlushFileBuffers or fsync"]
+    E["WAL confirms synchronization"]
+    F["Engine installs or evicts or flushes database pages"]
+    G["Engine synchronizes database with FlushFileBuffers or fsync"]
+    H["Engine returns commit success to application"]
+    I["Process may die after any subset of database writes"]
+    J["Restart after an interrupted session"]
+    K["Engine validates WAL record stream and transaction groups"]
+    L["Engine replays newest committed image per database page"]
+    M["Engine synchronizes database"]
+    N["Engine validates complete tree and free list"]
+    O["Engine truncates WAL to header and synchronizes"]
+    P["Engine starts new WAL session and synchronizes"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    F --> I
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    M --> N
+    N --> O
+    O --> P
 ```
 
 ## Enforcing write-ahead order

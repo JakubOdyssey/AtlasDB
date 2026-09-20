@@ -5,9 +5,12 @@ IDs. Every node is a slotted disk page, including a one-leaf empty tree.
 
 ```mermaid
 flowchart TD
-    R["internal: separator m"] --> A["leaf: a, c, g"]
-    R --> B["leaf: m, q, z"]
-    A -. next leaf .-> B
+    A["Internal separator m"]
+    B["Leaf a, c, g with next leaf link"]
+    C["Leaf m, q, z"]
+    A --> B
+    A --> C
+    B --> C
 ```
 
 Search chooses `upper_bound(separators, key)`. A separator is the exact minimum

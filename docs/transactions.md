@@ -7,14 +7,28 @@ ACID contract.
 ## State machine
 
 ```mermaid
-stateDiagram-v2
-    [*] --> ACTIVE: begin
-    ACTIVE --> COMMITTED: commit succeeds
-    ACTIVE --> ABORTED: rollback / destruction / mutation error
-    ACTIVE --> IN_DOUBT: exception after entering WAL commit
-    COMMITTED --> [*]
-    ABORTED --> [*]
-    IN_DOUBT --> [*]: reopen database to resolve persisted state
+flowchart TD
+    A["Begin transaction"]
+    B["ACTIVE"]
+    C["Commit succeeds"]
+    D["COMMITTED"]
+    E["Rollback or destruction or mutation error"]
+    F["ABORTED"]
+    G["Exception after entering WAL commit"]
+    H["IN_DOUBT"]
+    I["Reopen database to resolve persisted state"]
+    J["Transaction finished"]
+    A --> B
+    B --> C
+    C --> D
+    D --> J
+    B --> E
+    E --> F
+    F --> J
+    B --> G
+    G --> H
+    H --> I
+    I --> J
 ```
 
 `put` is an upsert. `erase` returns whether the key existed. `get` returns

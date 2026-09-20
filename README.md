@@ -36,17 +36,26 @@ safety, parallel read execution or recovery from arbitrary media corruption.
 
 ```mermaid
 flowchart TD
-    API["Embedded API / CLI"] --> TX["Single-writer transaction coordinator"]
-    TX --> TREE["Persistent B+ tree"]
-    TREE --> PRIVATE["Private changed-page workspace"]
-    PRIVATE --> BP["CLOCK buffer pool + RAII guards"]
-    TX --> WAL["Full-page redo WAL"]
-    WAL --> LOG[("database.db.wal")]
-    TX -->|"after WAL sync"| BP
-    BP --> DM["Native disk manager"]
-    DM --> DB[("database.db")]
-    REC["Recovery + structural verifier"] --> LOG
-    REC --> DB
+    A["Embedded API and CLI"]
+    B["Transaction coordinator"]
+    C["Persistent B plus tree"]
+    D["Private page workspace"]
+    E["CLOCK buffer pool"]
+    F["Disk manager"]
+    G["Database file"]
+    H["Write ahead log"]
+    I["WAL file"]
+    J["Recovery and verifier"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    B --> H
+    H --> I
+    J --> I
+    J --> G
 ```
 
 The tree never writes directly to disk. It operates through a page-access
@@ -78,9 +87,12 @@ single-child root. Scans follow the leaf chain in key order.
 
 ```mermaid
 flowchart TD
-    R["root: separator user:1004"] --> L["leaf: user:1001 … user:1003"]
-    R --> Q["leaf: user:1004 … user:1007"]
-    L -. ordered scan .-> Q
+    A["Root separator user:1004"]
+    B["Leaf user:1001 to user:1003 with ordered scan to next leaf"]
+    C["Leaf user:1004 to user:1007"]
+    A --> B
+    A --> C
+    B --> C
 ```
 
 Version 1 accepts 0–128-byte keys and 0–512-byte values, including empty and
@@ -105,21 +117,26 @@ cache and reach disk. Database synchronization precedes successful return.
 Rollback needs no disk undo because the design does not steal private pages.
 
 ```mermaid
-sequenceDiagram
-    participant App
-    participant Engine
-    participant WAL
-    participant DB as Database
-    App->>Engine: commit private page changes
-    Engine->>WAL: BEGIN + PAGE images + COMMIT
-    Engine->>WAL: synchronize
-    Engine->>DB: write changed pages
-    Note over Engine,DB: process dies after only some writes
-    App->>Engine: reopen
-    Engine->>WAL: validate complete committed groups
-    Engine->>DB: redo complete page images
-    Engine->>DB: synchronize and verify all invariants
-    Engine->>WAL: reset only after successful verification
+flowchart TD
+    A["Application commits private page changes"]
+    B["Engine appends BEGIN and PAGE images and COMMIT to WAL"]
+    C["Engine synchronizes WAL"]
+    D["Engine writes changed database pages"]
+    E["Process dies after only some writes"]
+    F["Application reopens database"]
+    G["Engine validates complete committed groups in WAL"]
+    H["Engine replays complete page images into database"]
+    I["Engine synchronizes database and verifies all invariants"]
+    J["Engine resets WAL only after successful verification"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
 ```
 
 A SESSION marker distinguishes an interrupted session from a cleanly closed
